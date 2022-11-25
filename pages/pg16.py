@@ -126,9 +126,9 @@ def update_graphs(pais_v, comparacion_por_v, years_chosen):
                 color='rgb(82, 82, 82)',
             ),
         ),
-        autosize=False,
+        autosize=True,
         margin=dict(
-            autoexpand=False,
+            autoexpand=True,
             l=25,
             r=25,
             t=65,
