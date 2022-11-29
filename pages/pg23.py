@@ -7,14 +7,14 @@ from dash import dcc, html, register_page, ctx, no_update
 from dash_extensions.enrich import Output, Input, State, callback
 
 dash.register_page(__name__,
-                   path='/actividades-cuidado-ninos',  # represents the url text
-                   name='Participación en actividades de cuidado de niños',  # name of page, commonly used as name of link
-                   title='Participación en actividades de cuidado de niños'  # epresents the title of browser's tab
+                   path='/brecha-fecundidad-deseada-conyuges',  # represents the url text
+                   name='Brecha de fecundidad deseada entre cónyuges',  # name of page, commonly used as name of link
+                   title='Brecha de fecundidad deseada entre cónyuges'  # epresents the title of browser's tab
 )
 
 
 # page 1 data
-df = pd.read_csv("datasets/cuidado_ninos.csv")
+df = pd.read_csv("datasets/brecha_hijos_cony.csv")
 df['indicador'] = df['indicador'].astype(str)
 df['pais'] = df['pais'].astype(str)
 df['comparacion_por'] = df['comparacion_por'].astype(str)
@@ -37,20 +37,20 @@ list_comparacion_por_ordenada = [x for _,x in sorted(zip(list_comparacion_por_or
 layout = html.Div([
         dbc.Row([
         dbc.Col([
-            dcc.Dropdown(options=[{'label': x, 'value': x} for x in df.pais.unique()], multi=True, id='page14-pais_elect')
+            dcc.Dropdown(options=[{'label': x, 'value': x} for x in df.pais.unique()], multi=True, id='page23-pais_elect')
         ], width=6),
         dbc.Col([
-            dcc.Dropdown(options=[{'label': x, 'value': x} for x in list_comparacion_por_ordenada], multi=False, persistence=True, persistence_type='memory', value='Ratio mujeres/hombres', id='page14-comparacion_por_elect')
+            dcc.Dropdown(options=[{'label': x, 'value': x} for x in list_comparacion_por_ordenada], multi=False, persistence=True, persistence_type='memory', value='Ratio mujeres/hombres', id='page23-comparacion_por_elect')
         ], width=6),
     ]),
         dbc.Row([
         dbc.Col([
-            dcc.Graph(id='page14-line', config={'displayModeBar':False})
+            dcc.Graph(id='page23-line', config={'displayModeBar':False})
         ], width=12),
     ]),
         dbc.Row([
         dbc.Col([
-        dcc.RangeSlider(id='page14-the_year',
+        dcc.RangeSlider(id='page23-the_year',
                 min=2000,
                 max=2021,
                 value=[2000,2021],
@@ -62,9 +62,9 @@ layout = html.Div([
 
 
 @callback(
-    Output('page14-pais_elect', "value"),
+    Output('page23-pais_elect', "value"),
     Output("store", "data"),
-    Input('page14-pais_elect', "value"),
+    Input('page23-pais_elect', "value"),
     State("store", "data"),
 )
 def sync_dropdowns(dd_pais, store_pais):
@@ -73,10 +73,10 @@ def sync_dropdowns(dd_pais, store_pais):
     return dd_pais, dd_pais
 
 @callback(
-    Output('page14-line', 'figure'),
-    Input('page14-pais_elect', 'value'),
-    Input('page14-comparacion_por_elect', 'value'),
-    [Input('page14-the_year','value')]
+    Output('page23-line', 'figure'),
+    Input('page23-pais_elect', 'value'),
+    Input('page23-comparacion_por_elect', 'value'),
+    [Input('page23-the_year','value')]
 )
 
 
