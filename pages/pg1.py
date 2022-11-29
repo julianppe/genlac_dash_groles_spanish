@@ -3,27 +3,23 @@ from dash import dcc, html, callback, Output, Input
 import plotly.express as px
 import dash_bootstrap_components as dbc
 import pandas as pd
-from dash import dcc, html, register_page, no_update
+from dash import dcc, html, register_page, ctx, no_update
 from dash_extensions.enrich import Output, Input, State, callback
 
-# To create meta tag for each page, define the title, image, and description.
 dash.register_page(__name__,
-                   path='/',  # '/' is home page and it represents the url
-                   name='Diferencia de edad entre conyuges',  # name of page, commonly used as name of link
-                   title='Diferencia de edad entre conyuges',  # title that appears on browser's tab
-                   #image='pg1.png',  # image in the assets folder
-                   #description='Histograms are the new bar charts.'
+                   path='/',  # represents the url text
+                   name='Población adulta de acuerdo con la frase “Los hombres son mejores líderes políticos que las mujeres”',  # name of page, commonly used as name of link
+                   title='Población adulta de acuerdo con la frase “Los hombres son mejores líderes políticos que las mujeres”'  # epresents the title of browser's tab
 )
 
+
 # page 1 data
-#df = pd.read_csv("https://raw.githubusercontent.com/julianppe/data/main/participacion.csv")
-df = pd.read_csv("datasets/diferencia_edad.csv")
+df = pd.read_csv("datasets/lider_politico.csv")
 df['indicador'] = df['indicador'].astype(str)
 df['pais'] = df['pais'].astype(str)
 df['comparacion_por'] = df['comparacion_por'].astype(str)
 df['ano'] = df['ano'].astype(int)
 
-# Armar loop:
 mark_values = {2000:'2000',2001:'2001',2002:'2002',
                 2003:'2003',2004:'2004',2005:'2005',
                 2006:'2006',2007:'2007',2008:'2008',
@@ -38,14 +34,13 @@ list_comparacion_por = list(df['comparacion_por'].unique())
 list_comparacion_por_orden = list(df['comparacion_por_orden'].unique())
 list_comparacion_por_ordenada = [x for _,x in sorted(zip(list_comparacion_por_orden,list_comparacion_por))]
 
-layout = html.Div(
-    [
+layout = html.Div([
         dbc.Row([
         dbc.Col([
-            dcc.Dropdown(options=[{'label': x, 'value': x} for x in df.pais.unique()], multi=True, className="bg-light", id='page1-pais_elect')
+            dcc.Dropdown(options=[{'label': x, 'value': x} for x in df.pais.unique()], multi=True, id='page1-pais_elect')
         ], width=6),
         dbc.Col([
-            dcc.Dropdown(options=[{'label': x, 'value': x} for x in list_comparacion_por_ordenada], multi=False, className="bg-light", persistence=True, persistence_type='memory', value='Total', id='page1-comparacion_por_elect')
+            dcc.Dropdown(options=[{'label': x, 'value': x} for x in list_comparacion_por_ordenada], multi=False, persistence=True, persistence_type='memory', value='Total', id='page1-comparacion_por_elect')
         ], width=6),
     ]),
         dbc.Row([
@@ -60,20 +55,18 @@ layout = html.Div(
                 max=2021,
                 value=[2000,2021],
                 marks=mark_values,
-                step=1,
-                persistence=True,
-                persistence_type='memory')
+                step=1)
         ], width=12),
-    ])
+    ]),
 ])
 
+
 @callback(
-    Output('page1-pais_elect', 'value'),
+    Output('page1-pais_elect', "value"),
     Output("store", "data"),
-    Input('page1-pais_elect', 'value'),
+    Input('page1-pais_elect', "value"),
     State("store", "data"),
 )
-
 def sync_dropdowns(dd_pais, store_pais):
     if dd_pais is None:
         return store_pais, no_update
@@ -86,33 +79,26 @@ def sync_dropdowns(dd_pais, store_pais):
     [Input('page1-the_year','value')]
 )
 
+
 def update_graphs(pais_v, comparacion_por_v, years_chosen):
-    dff = df.copy() # Copiamos la base original.
-    # Slider range de años:
-    dff = dff[(dff['ano']>=years_chosen[0])&(dff['ano']<=years_chosen[1])]
-    # Dropdown de pais:
+    dff = df.copy()
+    print(years_chosen)
+    dff=dff[(dff['ano']>=years_chosen[0])&(dff['ano']<=years_chosen[1])]
     if type(pais_v) == str:
         pais_v = [pais_v]
     dff = dff[dff['pais'].isin(pais_v)]
-    # Dropdown de comparación:
     dff = dff.query(f"comparacion_por == '{comparacion_por_v}'")
-    # Seleccion de indicador, detalle indicador y disclaimer.
     indicador = dff['indicador'].iat[0]
     detalle_indicador_v = dff['detalle_indicador'].iat[0]
     disclaimer = dff['disclaimer'].iat[0]
-    # Grafico con IC:
     if comparacion_por_v == 'Brecha mujeres - hombres':
-        fig_line = px.line(dff, x='ano', y='valor', color='pais2', error_y='valor_errorestandar',
-        symbol= 'desagregacion',
-        labels=dict(ano="Año", valor="", pais2="País", indicador="Indicador", desagregacion="Desagregación")).update_xaxes(type='category').update_layout(margin=dict(l=10, r=10, t=10, b=10))
+        fig_line = px.bar(dff, x='ano', y='valor', color='pais', error_y='valor_errorestandar', pattern_shape='desagregacion', barmode="group",
+        labels=dict(ano="Año", valor="", pais="País", indicador="Indicador", desagregacion="Desagregación")).update_xaxes(type='category', categoryorder='category ascending').update_layout(margin=dict(l=10, r=10, t=10, b=10))
     else:
-        fig_line = px.line(dff, x='ano', y='valor', color='pais2',
-        line_dash= 'desagregacion', symbol= 'desagregacion',
-        labels=dict(ano="Año", valor="", pais2="País", indicador="Indicador", desagregacion="Desagregación")).update_xaxes(type='category').update_layout(margin=dict(l=10, r=10, t=10, b=10))
-    fig_line.update_traces(line=dict(width=2), 
-        marker={'size': 10})
+        fig_line = px.bar(dff, x='ano', y='valor', color='pais', pattern_shape='desagregacion', pattern_shape_sequence=["", "x", "."], barmode="group",
+        labels=dict(ano="Año", valor="", pais="País", indicador="Indicador", desagregacion="Desagregación")).update_xaxes(type='category', categoryorder='category ascending').update_layout(margin=dict(l=10, r=10, t=10, b=10))
     fig_line.update_layout(
-        xaxis=dict(
+        xaxis=dict( 
             showline=True,
             showgrid=True,
             showticklabels=True,

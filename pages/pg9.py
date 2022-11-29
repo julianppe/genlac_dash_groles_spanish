@@ -7,19 +7,18 @@ from dash import dcc, html, register_page, ctx, no_update
 from dash_extensions.enrich import Output, Input, State, callback
 
 dash.register_page(__name__,
-                   path='/porcen-hog-mono',  # represents the url text
-                   name='Porcentaje de hogares monoparentales',  # name of page, commonly used as name of link
-                   title='Porcentaje de hogares monoparentales'  # epresents the title of browser's tab
+                   path='/aprenden-rapido-3ro',  # represents the url text
+                   name='Docentes de 3er grado que opinan que niños o niñas aprenden más rápido matemática o lengua debido a características innatas',  # name of page, commonly used as name of link
+                   title='Docentes de 3er grado que opinan que niños o niñas aprenden más rápido matemática o lengua debido a características innatas'  # epresents the title of browser's tab
 )
 
 
 # page 1 data
-df = pd.read_csv("datasets/hogar_monoparental.csv")
+df = pd.read_csv("datasets/aprenden_rapido_3ro.csv")
 df['indicador'] = df['indicador'].astype(str)
 df['pais'] = df['pais'].astype(str)
 df['comparacion_por'] = df['comparacion_por'].astype(str)
 df['ano'] = df['ano'].astype(int)
-
 
 mark_values = {2000:'2000',2001:'2001',2002:'2002',
                 2003:'2003',2004:'2004',2005:'2005',
@@ -41,7 +40,7 @@ layout = html.Div([
             dcc.Dropdown(options=[{'label': x, 'value': x} for x in df.pais.unique()], multi=True, id='page9-pais_elect')
         ], width=6),
         dbc.Col([
-            dcc.Dropdown(options=[{'label': x, 'value': x} for x in list_comparacion_por_ordenada], multi=False, persistence=True, persistence_type='memory', value='Total', id='page9-comparacion_por_elect')
+            dcc.Dropdown(options=[{'label': x, 'value': x} for x in list_comparacion_por_ordenada], multi=False, persistence=True, persistence_type='memory', value='Género, matemática', id='page9-comparacion_por_elect')
         ], width=6),
     ]),
         dbc.Row([
@@ -93,17 +92,13 @@ def update_graphs(pais_v, comparacion_por_v, years_chosen):
     detalle_indicador_v = dff['detalle_indicador'].iat[0]
     disclaimer = dff['disclaimer'].iat[0]
     if comparacion_por_v == 'Brecha mujeres - hombres':
-        fig_line = px.line(dff, x='ano', y='valor', color='pais2', error_y='valor_errorestandar',
-        symbol= 'desagregacion',
-        labels=dict(ano="Año", valor="", pais2="País", indicador="Indicador", desagregacion="Desagregación")).update_xaxes(type='category').update_layout(margin=dict(l=10, r=10, t=10, b=10))
+        fig_line = px.bar(dff, x='ano', y='valor', color='pais', error_y='valor_errorestandar', pattern_shape='desagregacion', barmode="group",
+        labels=dict(ano="Año", valor="", pais="País", indicador="Indicador", desagregacion="Desagregación")).update_xaxes(type='category', categoryorder='category ascending').update_layout(margin=dict(l=10, r=10, t=10, b=10))
     else:
-        fig_line = px.line(dff, x='ano', y='valor', color='pais2',
-        line_dash= 'desagregacion', symbol= 'desagregacion',
-        labels=dict(ano="Año", valor="", pais2="País", indicador="Indicador", desagregacion="Desagregación")).update_xaxes(type='category').update_layout(margin=dict(l=10, r=10, t=10, b=10))
-    fig_line.update_traces(line=dict(width=2), 
-        marker={'size': 10})
+        fig_line = px.bar(dff, x='ano', y='valor', color='pais', pattern_shape='desagregacion', pattern_shape_sequence=["", "x", "."], barmode="group",
+        labels=dict(ano="Año", valor="", pais="País", indicador="Indicador", desagregacion="Desagregación")).update_xaxes(type='category', categoryorder='category ascending').update_layout(margin=dict(l=10, r=10, t=10, b=10))
     fig_line.update_layout(
-        xaxis=dict(
+        xaxis=dict( 
             showline=True,
             showgrid=True,
             showticklabels=True,

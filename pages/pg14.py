@@ -7,14 +7,14 @@ from dash import dcc, html, register_page, ctx, no_update
 from dash_extensions.enrich import Output, Input, State, callback
 
 dash.register_page(__name__,
-                   path='/actividades-cuidado-ninos',  # represents the url text
-                   name='Participación en actividades de cuidado de niños',  # name of page, commonly used as name of link
-                   title='Participación en actividades de cuidado de niños'  # epresents the title of browser's tab
+                   path='/ama-de-casa',  # represents the url text
+                   name='Población adulta de acuerdo con la frase “ser ama de casa es tan gratificante como tener un trabajo remunerado”',  # name of page, commonly used as name of link
+                   title='Población adulta de acuerdo con la frase “ser ama de casa es tan gratificante como tener un trabajo remunerado”'  # epresents the title of browser's tab
 )
 
 
 # page 1 data
-df = pd.read_csv("datasets/cuidado_ninos.csv")
+df = pd.read_csv("datasets/ama_de_casa.csv")
 df['indicador'] = df['indicador'].astype(str)
 df['pais'] = df['pais'].astype(str)
 df['comparacion_por'] = df['comparacion_por'].astype(str)
@@ -40,7 +40,7 @@ layout = html.Div([
             dcc.Dropdown(options=[{'label': x, 'value': x} for x in df.pais.unique()], multi=True, id='page14-pais_elect')
         ], width=6),
         dbc.Col([
-            dcc.Dropdown(options=[{'label': x, 'value': x} for x in list_comparacion_por_ordenada], multi=False, persistence=True, persistence_type='memory', value='Ratio mujeres/hombres', id='page14-comparacion_por_elect')
+            dcc.Dropdown(options=[{'label': x, 'value': x} for x in list_comparacion_por_ordenada], multi=False, persistence=True, persistence_type='memory', value='Total', id='page14-comparacion_por_elect')
         ], width=6),
     ]),
         dbc.Row([
@@ -92,9 +92,8 @@ def update_graphs(pais_v, comparacion_por_v, years_chosen):
     detalle_indicador_v = dff['detalle_indicador'].iat[0]
     disclaimer = dff['disclaimer'].iat[0]
     if comparacion_por_v == 'Brecha mujeres - hombres':
-        fig_line = px.line(dff, x='ano', y='valor', color='pais', error_y='valor_errorestandar',
-        symbol= 'desagregacion',
-        labels=dict(ano="Año", valor="", pais="País", indicador="Indicador", desagregacion="Desagregación")).update_xaxes(type='category').update_layout(margin=dict(l=10, r=10, t=10, b=10))
+        fig_line = px.bar(dff, x='ano', y='valor', color='pais', error_y='valor_errorestandar', pattern_shape='desagregacion', barmode="group",
+        labels=dict(ano="Año", valor="", pais="País", indicador="Indicador", desagregacion="Desagregación")).update_xaxes(type='category', categoryorder='category ascending').update_layout(margin=dict(l=10, r=10, t=10, b=10))
     else:
         fig_line = px.bar(dff, x='ano', y='valor', color='pais', pattern_shape='desagregacion', pattern_shape_sequence=["", "x", "."], barmode="group",
         labels=dict(ano="Año", valor="", pais="País", indicador="Indicador", desagregacion="Desagregación")).update_xaxes(type='category', categoryorder='category ascending').update_layout(margin=dict(l=10, r=10, t=10, b=10))

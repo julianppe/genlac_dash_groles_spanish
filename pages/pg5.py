@@ -7,14 +7,14 @@ from dash import dcc, html, register_page, ctx, no_update
 from dash_extensions.enrich import Output, Input, State, callback
 
 dash.register_page(__name__,
-                   path='/porcentaje-mas-educacion',  # represents the url text
-                   name='Porcentaje de personas más o igualmente educadas que su pareja que se encuentran inactivas',  # name of page, commonly used as name of link
-                   title='Porcentaje de personas más o igualmente educadas que su pareja que se encuentran inactivas'  # epresents the title of browser's tab
+                   path='/empleador-nocontrata-madres',  # represents the url text
+                   name='Población adulta que opina que los empresarios no contratan a mujeres con niños',  # name of page, commonly used as name of link
+                   title='Población adulta que opina que los empresarios no contratan a mujeres con niños'  # epresents the title of browser's tab
 )
 
 
 # page 1 data
-df = pd.read_csv("datasets/educado_inactivo.csv")
+df = pd.read_csv("datasets/empleador_nocontrata_madres.csv")
 df['indicador'] = df['indicador'].astype(str)
 df['pais'] = df['pais'].astype(str)
 df['comparacion_por'] = df['comparacion_por'].astype(str)
@@ -92,17 +92,13 @@ def update_graphs(pais_v, comparacion_por_v, years_chosen):
     detalle_indicador_v = dff['detalle_indicador'].iat[0]
     disclaimer = dff['disclaimer'].iat[0]
     if comparacion_por_v == 'Brecha mujeres - hombres':
-        fig_line = px.line(dff, x='ano', y='valor', color='pais2', error_y='valor_errorestandar',
-        symbol= 'desagregacion',
-        labels=dict(ano="Año", valor="", pais2="País", indicador="Indicador", desagregacion="Desagregación")).update_xaxes(type='category').update_layout(margin=dict(l=10, r=10, t=10, b=10))
+        fig_line = px.bar(dff, x='ano', y='valor', color='pais', error_y='valor_errorestandar', pattern_shape='desagregacion', barmode="group",
+        labels=dict(ano="Año", valor="", pais="País", indicador="Indicador", desagregacion="Desagregación")).update_xaxes(type='category', categoryorder='category ascending').update_layout(margin=dict(l=10, r=10, t=10, b=10))
     else:
-        fig_line = px.line(dff, x='ano', y='valor', color='pais2',
-        line_dash= 'desagregacion', symbol= 'desagregacion',
-        labels=dict(ano="Año", valor="", pais2="País", indicador="Indicador", desagregacion="Desagregación")).update_xaxes(type='category').update_layout(margin=dict(l=10, r=10, t=10, b=10))
-    fig_line.update_traces(line=dict(width=2), 
-        marker={'size': 10})
+        fig_line = px.bar(dff, x='ano', y='valor', color='pais', pattern_shape='desagregacion', pattern_shape_sequence=["", "x", "."], barmode="group",
+        labels=dict(ano="Año", valor="", pais="País", indicador="Indicador", desagregacion="Desagregación")).update_xaxes(type='category', categoryorder='category ascending').update_layout(margin=dict(l=10, r=10, t=10, b=10))
     fig_line.update_layout(
-        xaxis=dict(
+        xaxis=dict( 
             showline=True,
             showgrid=True,
             showticklabels=True,
